@@ -1,0 +1,51 @@
+name: Compilar APK Android
+
+# Se ejecuta manualmente (pestaña Actions -> "Run workflow")
+# o al crear una etiqueta de versión (ej. v1.0.0)
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configurar Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar dependencias (Capacitor)
+        run: npm install
+
+      - name: Preparar carpeta web (www/)
+        run: npm run web:build
+
+      - name: Añadir plataforma Android
+        run: npx cap add android
+
+      - name: Sincronizar web -> Android
+        run: npx cap copy android
+
+      - name: Compilar APK (debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Subir APK como artefacto descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: cryptoswing-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

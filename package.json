@@ -1,0 +1,20 @@
+{
+  "name": "cryptoswing",
+  "version": "1.0.0",
+  "description": "Simulador educativo de swing trading de criptomonedas con datos reales, paper trading, backtesting y PWA.",
+  "license": "MIT",
+  "scripts": {
+    "serve": "python3 -m http.server 8080",
+    "web:build": "node ./scripts/build-web.js",
+    "android:add": "npm run web:build && npx cap add android",
+    "android:copy": "npm run web:build && npx cap copy android",
+    "android:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

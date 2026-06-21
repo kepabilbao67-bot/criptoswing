@@ -56,33 +56,44 @@ Clic derecho en `index.html` → *Open with Live Server*.
 
 ---
 
-## 📱 Cómo convertirla en APK (Android)
+## 🌐 Publicación web automática (GitHub Pages)
 
-La app es web, así que se empaqueta fácilmente con **[Capacitor](https://capacitorjs.com)**:
+El repositorio ya incluye un workflow que **despliega la web automáticamente** cada vez que haces push a `main`.
+
+1. Solo necesitas (una vez) ir a **Settings → Pages** y, si no se activó solo, elegir como *Source* → **GitHub Actions**.
+2. Cada push a `main` publica la app. La URL será:
+   `https://kepabilbao67-bot.github.io/criptoswing/`
+3. Workflow: `.github/workflows/deploy-pages.yml`
+
+Con esa URL (HTTPS) ya puedes **instalar la PWA** en el móvil: abre la web → menú del navegador → *Añadir a pantalla de inicio*.
+
+---
+
+## 📱 Generar la APK de Android — AUTOMÁTICO (sin instalar nada)
+
+El repositorio incluye un workflow que **compila la APK en la nube** con GitHub Actions:
+
+1. Ve a la pestaña **Actions** del repositorio.
+2. Elige el workflow **"Compilar APK Android"** → botón **"Run workflow"**.
+3. Cuando termine (unos minutos), entra en la ejecución y descarga el artefacto **`cryptoswing-apk`** (contiene `app-debug.apk`).
+4. Copia ese `.apk` a tu móvil Android e instálalo (activa "instalar apps de orígenes desconocidos").
+
+Workflow: `.github/workflows/build-apk.yml`
+
+### Generar la APK en tu PC (alternativa manual)
+
+Requisitos: **Node.js**, **Java JDK 17** y **Android Studio**.
 
 ```bash
-# 1. Inicializa un proyecto e instala Capacitor
-npm init -y
-npm install @capacitor/core @capacitor/cli @capacitor/android
-
-# 2. Inicializa Capacitor (webDir = carpeta con index.html)
-npx cap init CryptoSwing com.tuempresa.cryptoswing --web-dir .
-
-# 3. Añade la plataforma Android
-npx cap add android
-
-# 4. Copia los archivos web y abre Android Studio
-npx cap copy
-npx cap open android
+npm install            # instala Capacitor
+npm run android:add    # prepara www/ y añade la plataforma Android
+npm run android:copy   # sincroniza los archivos web
+npm run android:open   # abre Android Studio
 ```
 
-En **Android Studio** → *Build > Build Bundle(s) / APK(s) > Build APK(s)* para generar el `.apk`.
+En **Android Studio** → *Build > Build Bundle(s)/APK(s) > Build APK(s)*.
 
-> Requisitos: tener instalados **Node.js**, **Java JDK** y **Android Studio**.
-> Para publicar en Google Play necesitas una cuenta de desarrollador (pago único) y firmar la app (`keystore`).
-
-### Alternativa más rápida: PWA
-Como ya es responsive, puedes añadir un `manifest.json` y un *service worker* para que sea instalable como **PWA** desde el navegador móvil, sin Android Studio.
+> La APK *debug* sirve para probar e instalar manualmente. Para **publicar en Google Play** necesitas una cuenta de desarrollador y firmar la app con un *keystore* (build *release*).
 
 ---
 
@@ -100,11 +111,20 @@ Algunas ideas legítimas y responsables:
 ## 🗂️ Estructura
 
 ```
-crypto-swing-app/
-├── index.html   # Estructura y UI
-├── styles.css   # Diseño (tema oscuro profesional)
-├── app.js       # Lógica: datos, indicadores, gráficos, paper trading
-└── README.md    # Este archivo
+criptoswing/
+├── index.html        # Estructura y UI
+├── styles.css        # Diseño (tema oscuro profesional)
+├── app.js            # Lógica: datos, indicadores, gráficos, paper trading, backtesting
+├── manifest.json     # PWA: metadatos de la app
+├── sw.js             # PWA: service worker (instalable / offline shell)
+├── icon.svg          # Icono de la app
+├── capacitor.config.json  # Configuración para empaquetar la APK
+├── package.json      # Scripts y dependencias de Capacitor
+├── scripts/
+│   └── build-web.js  # Prepara la carpeta www/ para Capacitor
+└── .github/workflows/
+    ├── deploy-pages.yml  # Publica la web en GitHub Pages
+    └── build-apk.yml     # Compila la APK de Android en la nube
 ```
 
 ## 🔧 Personalización rápida (en `app.js`, objeto `CONFIG`)

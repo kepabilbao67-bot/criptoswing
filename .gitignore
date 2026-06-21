@@ -1,5 +1,8 @@
 node_modules/
 .DS_Store
 android/
+www/
+_site/
 *.log
 .cache/
+package-lock.json
