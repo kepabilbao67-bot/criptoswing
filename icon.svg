@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#0b0e14"/>
+  <rect x="64" y="64" width="384" height="384" rx="64" fill="#121722"/>
+  <!-- velas -->
+  <g stroke-linecap="round">
+    <line x1="150" y1="150" x2="150" y2="360" stroke="#ea3943" stroke-width="10"/>
+    <rect x="132" y="210" width="36" height="110" rx="6" fill="#ea3943"/>
+    <line x1="256" y1="120" x2="256" y2="380" stroke="#16c784" stroke-width="10"/>
+    <rect x="238" y="180" width="36" height="150" rx="6" fill="#16c784"/>
+    <line x1="362" y1="100" x2="362" y2="340" stroke="#16c784" stroke-width="10"/>
+    <rect x="344" y="150" width="36" height="120" rx="6" fill="#16c784"/>
+  </g>
+  <!-- linea de tendencia (EMA) -->
+  <polyline points="110,330 200,280 290,220 410,150" fill="none" stroke="#3b82f6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

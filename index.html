@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b0e14" />
+  <title>CryptoSwing · Simulador de Trading</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- TradingView Lightweight Charts (gratuito) -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📈</span>
+      <div>
+        <h1>CryptoSwing</h1>
+        <span class="tagline">Simulador · dinero de práctica</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label class="ctrl">
+        <span>Par</span>
+        <select id="symbolSelect">
+          <option value="BTCUSDT">BTC / USDT</option>
+          <option value="ETHUSDT">ETH / USDT</option>
+          <option value="BNBUSDT">BNB / USDT</option>
+          <option value="SOLUSDT">SOL / USDT</option>
+          <option value="XRPUSDT">XRP / USDT</option>
+        </select>
+      </label>
+      <label class="ctrl">
+        <span>Temporalidad</span>
+        <select id="intervalSelect">
+          <option value="15m">15m</option>
+          <option value="1h">1h</option>
+          <option value="4h">4h</option>
+          <option value="1d" selected>1D</option>
+        </select>
+      </label>
+      <label class="ctrl sound-ctrl">
+        <span>Alerta</span>
+        <button id="soundToggle" class="sound-btn" title="Activar/desactivar sonido">🔔</button>
+      </label>
+      <div class="live-badge" id="liveBadge"><span class="dot"></span> EN VIVO</div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Columna izquierda: gráficos -->
+    <section class="chart-col">
+      <div class="price-strip">
+        <div class="price-main">
+          <span id="lastPrice" class="last-price">--</span>
+          <span id="priceChange" class="price-change">--</span>
+        </div>
+        <div class="legend">
+          <span class="lg lg-ema50">● EMA 50</span>
+          <span class="lg lg-ema200">● EMA 200</span>
+        </div>
+      </div>
+
+      <div id="chart" class="chart-box"></div>
+      <div class="rsi-label">RSI (14) <span id="rsiValue">--</span></div>
+      <div id="rsiChart" class="rsi-box"></div>
+    </section>
+
+    <!-- Columna derecha: panel de trading -->
+    <aside class="panel-col">
+      <!-- Señal -->
+      <div class="card signal-card">
+        <h2>Señal de la estrategia</h2>
+        <div id="signalBadge" class="signal-badge wait">ESPERANDO</div>
+        <ul class="conditions" id="conditions">
+          <li data-cond="trend"><span class="mark">○</span> Tendencia alcista (EMA50 &gt; EMA200)</li>
+          <li data-cond="pullback"><span class="mark">○</span> Precio cerca de EMA50 (pullback)</li>
+          <li data-cond="rsi"><span class="mark">○</span> RSI entre 40 y 55</li>
+        </ul>
+      </div>
+
+      <!-- Cuenta demo -->
+      <div class="card account-card">
+        <h2>Cuenta de práctica</h2>
+        <div class="balance-grid">
+          <div>
+            <span class="lbl">Saldo</span>
+            <span id="balance" class="big">$500.00</span>
+          </div>
+          <div>
+            <span class="lbl">Equity</span>
+            <span id="equity" class="big">$500.00</span>
+          </div>
+        </div>
+        <div class="risk-row">
+          <label>Riesgo por operación
+            <select id="riskSelect">
+              <option value="0.01" selected>1% (conservador)</option>
+              <option value="0.02">2% (moderado)</option>
+              <option value="0.03">3% (agresivo)</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <!-- Posición abierta -->
+      <div class="card position-card">
+        <h2>Posición abierta</h2>
+        <div id="noPosition" class="muted">Sin posición. Pulsa COMPRAR cuando haya señal.</div>
+        <div id="positionInfo" class="hidden">
+          <div class="pos-row"><span>Entrada</span><b id="posEntry">--</b></div>
+          <div class="pos-row"><span>Cantidad</span><b id="posQty">--</b></div>
+          <div class="pos-row"><span>Stop Loss</span><b id="posStop" class="red">--</b></div>
+          <div class="pos-row"><span>Take Profit</span><b id="posTP" class="green">--</b></div>
+          <div class="pos-row pnl-row"><span>P&L flotante</span><b id="posPnl">--</b></div>
+        </div>
+        <div class="btn-row">
+          <button id="buyBtn" class="btn buy">COMPRAR (Long)</button>
+          <button id="closeBtn" class="btn close" disabled>CERRAR</button>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="card stats-card">
+        <h2>Estadísticas</h2>
+        <div class="stats-grid">
+          <div><span class="lbl">Operaciones</span><b id="stTrades">0</b></div>
+          <div><span class="lbl">Win rate</span><b id="stWinrate">0%</b></div>
+          <div><span class="lbl">P&L neto</span><b id="stPnl">$0.00</b></div>
+          <div><span class="lbl">Drawdown máx</span><b id="stDrawdown">0%</b></div>
+        </div>
+        <button id="resetBtn" class="btn ghost">Reiniciar cuenta demo</button>
+      </div>
+
+      <!-- Backtesting -->
+      <div class="card backtest-card">
+        <h2>🔬 Backtesting</h2>
+        <p class="muted bt-intro">Prueba la estrategia con el historial cargado del par y temporalidad actuales.</p>
+        <button id="backtestBtn" class="btn ghost">Ejecutar backtest</button>
+        <div id="backtestResults" class="hidden bt-results">
+          <div class="bt-grid">
+            <div><span class="lbl">Operaciones</span><b id="btTrades">0</b></div>
+            <div><span class="lbl">Win rate</span><b id="btWinrate">0%</b></div>
+            <div><span class="lbl">Rentabilidad</span><b id="btReturn">0%</b></div>
+            <div><span class="lbl">Drawdown máx</span><b id="btDrawdown">0%</b></div>
+            <div><span class="lbl">Profit factor</span><b id="btPF">0</b></div>
+            <div><span class="lbl">Saldo final</span><b id="btFinal">$0</b></div>
+          </div>
+          <p class="muted bt-period" id="btPeriod"></p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Journal -->
+  <section class="journal-section">
+    <div class="journal-head">
+      <h2>📒 Historial de operaciones (Journal)</h2>
+      <button id="exportBtn" class="btn ghost small">Exportar CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table id="journalTable">
+        <thead>
+          <tr>
+            <th>Fecha</th><th>Par</th><th>Entrada</th><th>Salida</th>
+            <th>Stop</th><th>TP</th><th>Resultado</th><th>%</th><th>Motivo cierre</th>
+          </tr>
+        </thead>
+        <tbody id="journalBody">
+          <tr class="empty"><td colspan="9">Aún no hay operaciones registradas.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="disclaimer">
+    ⚠️ Herramienta <b>educativa</b> con dinero ficticio. No es asesoramiento financiero.
+    Los datos de mercado son reales (Binance) pero las operaciones son simuladas.
+    El trading de criptomonedas es de alto riesgo.
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
