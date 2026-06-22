@@ -22,6 +22,13 @@ const CONFIG = {
   initialBalance: 500,
   refreshMs: 5000,       // refresco "tiempo real"
   candleLimit: 320,
+  // Filtros de confirmación (mejora de la estrategia)
+  macdFast: 12,
+  macdSlow: 26,
+  macdSignal: 9,
+  volMaPeriod: 20,
+  useMacd: true,         // exigir momentum alcista (MACD)
+  useVolume: true,       // exigir volumen por encima de la media
 };
 
 const API_BASES = [
@@ -97,6 +104,28 @@ function rsi(values, period) {
     out[i] = 100 - 100 / (1 + (avgLoss === 0 ? 100 : avgGain / avgLoss));
   }
   return out;
+}
+
+// Media móvil simple (para el volumen)
+function sma(values, period) {
+  const out = new Array(values.length).fill(null);
+  let sum = 0;
+  for (let i = 0; i < values.length; i++) {
+    sum += values[i];
+    if (i >= period) sum -= values[i - period];
+    if (i >= period - 1) out[i] = sum / period;
+  }
+  return out;
+}
+
+// MACD: línea, señal e histograma
+function macd(values, fast, slow, signalP) {
+  const ef = ema(values, fast);
+  const es = ema(values, slow);
+  const macdLine = values.map((_, i) => ef[i] - es[i]);
+  const signalLine = ema(macdLine, signalP);
+  const histogram = macdLine.map((v, i) => v - signalLine[i]);
+  return { macdLine, signalLine, histogram };
 }
 
 /* ------------------------- Gráficos ------------------------- */
@@ -219,15 +248,18 @@ function renderChart() {
   candleSeries.setData(c);
 
   const closes = c.map((x) => x.close);
+  const volumes = c.map((x) => x.volume || 0);
   const e50 = ema(closes, CONFIG.emaFast);
   const e200 = ema(closes, CONFIG.emaSlow);
   const rsiArr = rsi(closes, CONFIG.rsiPeriod);
+  const macdData = macd(closes, CONFIG.macdFast, CONFIG.macdSlow, CONFIG.macdSignal);
+  const volMA = sma(volumes, CONFIG.volMaPeriod);
 
   ema50Series.setData(c.map((x, i) => ({ time: x.time, value: e50[i] })).slice(CONFIG.emaFast));
   ema200Series.setData(c.map((x, i) => ({ time: x.time, value: e200[i] })).slice(CONFIG.emaSlow));
   rsiSeries.setData(c.map((x, i) => ({ time: x.time, value: rsiArr[i] })).filter((p) => p.value != null));
 
-  state._ind = { e50, e200, rsiArr };
+  state._ind = { e50, e200, rsiArr, macdData, volMA, volumes };
 }
 
 function renderPriceStrip() {
@@ -254,12 +286,21 @@ function currentSignal() {
   const e50 = state._ind.e50[i];
   const e200 = state._ind.e200[i];
   const r = state._ind.rsiArr[i];
+  const macdLine = state._ind.macdData.macdLine[i];
+  const volMA = state._ind.volMA[i];
+  const vol = state._ind.volumes[i];
 
   const trend = e50 > e200;
-  const pullback = Math.abs(price - e50) / e50 <= CONFIG.pullbackPct;
-  const rsiOk = r >= CONFIG.rsiMin && r <= CONFIG.rsiMax;
+  const pullback = e50 > 0 && Math.abs(price - e50) / e50 <= CONFIG.pullbackPct;
+  const rsiOk = r != null && r >= CONFIG.rsiMin && r <= CONFIG.rsiMax;
+  const macdOk = !CONFIG.useMacd || macdLine > 0;
+  const volOk = !CONFIG.useVolume || (volMA != null && vol > volMA);
 
-  return { trend, pullback, rsiOk, buy: trend && pullback && rsiOk, price, e50, e200, rsi: r };
+  return {
+    trend, pullback, rsiOk, macdOk, volOk,
+    buy: trend && pullback && rsiOk && macdOk && volOk,
+    price, e50, e200, rsi: r,
+  };
 }
 
 function evaluateSignal() {
@@ -268,12 +309,15 @@ function evaluateSignal() {
 
   const setCond = (key, ok) => {
     const li = document.querySelector(`.conditions li[data-cond="${key}"]`);
+    if (!li) return;
     li.classList.toggle("ok", ok);
     li.querySelector(".mark").textContent = ok ? "●" : "○";
   };
   setCond("trend", s.trend);
   setCond("pullback", s.pullback);
   setCond("rsi", s.rsiOk);
+  setCond("macd", s.macdOk);
+  setCond("volume", s.volOk);
 
   const badge = $("signalBadge");
   if (s.buy && !store.position) {
@@ -469,9 +513,13 @@ function exportCSV() {
 function simulateStrategy(candles, riskPct, cfg = CONFIG) {
   const c = candles;
   const closes = c.map((x) => x.close);
+  const volumes = c.map((x) => x.volume || 0);
   const e50 = ema(closes, cfg.emaFast);
   const e200 = ema(closes, cfg.emaSlow);
   const rsiArr = rsi(closes, cfg.rsiPeriod);
+  const macdData = macd(closes, cfg.macdFast, cfg.macdSlow, cfg.macdSignal);
+  const volMA = sma(volumes, cfg.volMaPeriod);
+  const macdMode = cfg.macdMode || "zero"; // "zero": MACD>0 | "hist": histograma>0
 
   let balance = cfg.initialBalance;
   let peak = balance, maxDD = 0;
@@ -500,7 +548,9 @@ function simulateStrategy(candles, riskPct, cfg = CONFIG) {
       const pullback = e50[i] > 0 && Math.abs(price - e50[i]) / e50[i] <= cfg.pullbackPct;
       const r = rsiArr[i];
       const rsiOk = r != null && !isNaN(r) && r >= cfg.rsiMin && r <= cfg.rsiMax;
-      if (trend && pullback && rsiOk && price > 0) {
+      const macdOk = !cfg.useMacd || (macdMode === "hist" ? macdData.histogram[i] > 0 : macdData.macdLine[i] > 0);
+      const volOk = !cfg.useVolume || (volMA[i] != null && candle.volume > volMA[i]);
+      if (trend && pullback && rsiOk && macdOk && volOk && price > 0) {
         const positionUsd = Math.min((balance * riskPct) / cfg.stopLossPct, balance);
         pos = {
           entry: price,

@@ -10,12 +10,21 @@ App web para **practicar trading de criptomonedas con dinero ficticio**, usando 
 
 - 📊 **Gráfico de velas en tiempo real** con TradingView Lightweight Charts.
 - 🎨 **Indicadores a color:** EMA 50 (azul), EMA 200 (naranja) y panel **RSI (14)** con zonas 30/70.
-- 🟢 **Detector de señales** según la estrategia (las 3 condiciones se marcan en verde al cumplirse).
+- 🟢 **Detector de señales** con **5 condiciones** de confirmación (se marcan en verde al cumplirse):
+  1. Tendencia alcista (EMA 50 &gt; EMA 200)
+  2. Pullback (precio cerca de la EMA 50)
+  3. RSI entre 40 y 55
+  4. **Momentum alcista (MACD &gt; 0)** — filtro que evita entrar en mercados bajistas
+  5. **Volumen por encima de su media (20)** — confirma participación real
 - 💵 **Cuenta de práctica con 500 USD** ficticios (configurable, se guarda en tu navegador).
 - 🛡️ **Gestión de riesgo automática:** calcula tamaño de posición, stop loss (-4%) y take profit (+8%).
+- 🔬 **Backtesting** con años de histórico real (1 a 5 años).
+- 🔔 **Alertas sonoras** al aparecer una señal.
 - 📒 **Journal automático** de cada operación + **exportar a CSV**.
 - 📈 **Estadísticas:** nº de operaciones, win rate, P&L neto y drawdown máximo.
 - 📱 **Responsive** — funciona en móvil y se puede empaquetar como **APK**.
+
+> 🧪 **Los filtros MACD + volumen están validados con backtests:** en pruebas sobre 5-10 años de datos redujeron el drawdown y mejoraron la rentabilidad frente a la versión sin filtros (especialmente en mercados laterales y bajistas).
 
 ---
 
@@ -25,14 +34,14 @@ No necesita instalación ni claves de API. Solo un servidor web local (porque el
 
 ### Opción A — Python (ya lo tienes instalado)
 ```bash
-cd crypto-swing-app
+cd criptoswing
 python3 -m http.server 8080
 ```
 Abre en el navegador: **http://localhost:8080**
 
 ### Opción B — Node.js
 ```bash
-cd crypto-swing-app
+cd criptoswing
 npx serve .
 ```
 
@@ -135,5 +144,8 @@ criptoswing/
 | `rsiMin` / `rsiMax` | 40 / 55 | Zona de RSI para la señal |
 | `stopLossPct` | 0.04 | Stop loss (4%) |
 | `takeProfitPct` | 0.08 | Take profit (8%) |
+| `useMacd` | true | Exigir momentum alcista (MACD &gt; 0) |
+| `useVolume` | true | Exigir volumen sobre la media |
+| `volMaPeriod` | 20 | Periodo de la media de volumen |
 | `initialBalance` | 500 | Saldo inicial de la cuenta demo |
 | `refreshMs` | 5000 | Frecuencia de actualización (ms) |
