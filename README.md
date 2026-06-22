@@ -17,7 +17,7 @@ App web para **practicar trading de criptomonedas con dinero ficticio**, usando 
   4. **Momentum alcista (MACD &gt; 0)** — filtro que evita entrar en mercados bajistas
   5. **Volumen por encima de su media (20)** — confirma participación real
 - 💵 **Cuenta de práctica con 500 USD** ficticios (configurable, se guarda en tu navegador).
-- 🛡️ **Gestión de riesgo automática:** calcula tamaño de posición, stop loss (-4%) y take profit (+8%).
+- 🛡️ **Gestión de riesgo automática:** calcula tamaño de posición, stop loss (-5%) y take profit (+10%), ratio 1:2 optimizado por backtest.
 - 🔬 **Backtesting** con años de histórico real (1 a 5 años).
 - 🔔 **Alertas sonoras** al aparecer una señal.
 - 📒 **Journal automático** de cada operación + **exportar a CSV**.
@@ -142,8 +142,10 @@ criptoswing/
 |-----------|-------------|----------|
 | `emaFast` / `emaSlow` | 50 / 200 | Periodos de las medias móviles |
 | `rsiMin` / `rsiMax` | 40 / 55 | Zona de RSI para la señal |
-| `stopLossPct` | 0.04 | Stop loss (4%) |
-| `takeProfitPct` | 0.08 | Take profit (8%) |
+| `stopLossPct` | 0.05 | Stop loss (5%) — optimizado por backtest |
+| `takeProfitPct` | 0.10 | Take profit (10%, ratio 1:2) |
+| `useTrailing` | false | Stop dinámico (opcional, activable en la UI) |
+| `trailPct` | 0.06 | Distancia del trailing stop al máximo (si se activa) |
 | `useMacd` | true | Exigir momentum alcista (MACD &gt; 0) |
 | `useVolume` | true | Exigir volumen sobre la media |
 | `volMaPeriod` | 20 | Periodo de la media de volumen |

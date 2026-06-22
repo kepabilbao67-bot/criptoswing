@@ -17,8 +17,8 @@ const CONFIG = {
   rsiMin: 40,
   rsiMax: 55,
   pullbackPct: 0.03,     // precio dentro del +-3% de la EMA50
-  stopLossPct: 0.04,     // 4%
-  takeProfitPct: 0.08,   // 8%
+  stopLossPct: 0.05,     // 5% (optimizado por backtest, ratio 1:2)
+  takeProfitPct: 0.10,   // 10%
   initialBalance: 500,
   refreshMs: 5000,       // refresco "tiempo real"
   candleLimit: 320,
@@ -29,6 +29,8 @@ const CONFIG = {
   volMaPeriod: 20,
   useMacd: true,         // exigir momentum alcista (MACD)
   useVolume: true,       // exigir volumen por encima de la media
+  useTrailing: true,     // stop dinámico: deja correr las ganancias
+  trailPct: 0.06,        // el stop sigue al precio a un 6% por debajo del máximo
 };
 
 const API_BASES = [
@@ -357,6 +359,8 @@ function openPosition() {
     riskUsd,
     stop: entry * (1 - CONFIG.stopLossPct),
     tp: entry * (1 + CONFIG.takeProfitPct),
+    highest: entry,
+    trailingActive: false,
     openedAt: Date.now(),
   };
   saveStore();
@@ -399,8 +403,23 @@ function checkPositionTriggers() {
   if (!store.position) return;
   const p = store.position;
   const price = state.lastPrice;
-  if (price <= p.stop) closePosition("Stop Loss");
-  else if (price >= p.tp) closePosition("Take Profit");
+
+  // Salida por stop (fijo o trailing)
+  if (price <= p.stop) { closePosition(p.trailingActive ? "Trailing Stop" : "Stop Loss"); return; }
+
+  if (CONFIG.useTrailing) {
+    // Stop dinámico: sube el stop al 6% por debajo del máximo alcanzado
+    p.highest = Math.max(p.highest || p.entry, price);
+    const newStop = p.highest * (1 - CONFIG.trailPct);
+    if (newStop > p.stop) {
+      p.stop = newStop;
+      p.trailingActive = true;
+      saveStore();
+      drawPositionLines(); // redibuja la línea de stop en su nueva posición
+    }
+  } else if (price >= p.tp) {
+    closePosition("Take Profit");
+  }
 }
 
 function drawPositionLines() {
@@ -408,8 +427,10 @@ function drawPositionLines() {
   const p = store.position;
   if (!p) return;
   entryLine = candleSeries.createPriceLine({ price: p.entry, color: "#8a97ad", lineWidth: 1, lineStyle: 0, title: "Entrada" });
-  stopLine = candleSeries.createPriceLine({ price: p.stop, color: "#ea3943", lineWidth: 1, lineStyle: 2, title: "Stop" });
-  tpLine = candleSeries.createPriceLine({ price: p.tp, color: "#16c784", lineWidth: 1, lineStyle: 2, title: "TP" });
+  stopLine = candleSeries.createPriceLine({ price: p.stop, color: "#ea3943", lineWidth: 1, lineStyle: 2, title: p.trailingActive ? "Trailing Stop" : "Stop" });
+  if (!CONFIG.useTrailing) {
+    tpLine = candleSeries.createPriceLine({ price: p.tp, color: "#16c784", lineWidth: 1, lineStyle: 2, title: "TP" });
+  }
 }
 function clearPositionLines() {
   [entryLine, stopLine, tpLine].forEach((l) => l && candleSeries.removePriceLine(l));
@@ -530,9 +551,9 @@ function simulateStrategy(candles, riskPct, cfg = CONFIG) {
     const candle = c[i];
     if (pos) {
       let exit = null, reason = null;
-      // si una misma vela toca stop y tp, asumimos lo peor (stop) por prudencia
-      if (candle.low <= pos.stop) { exit = pos.stop; reason = "Stop Loss"; }
-      else if (candle.high >= pos.tp) { exit = pos.tp; reason = "Take Profit"; }
+      // 1) comprobar salida con el stop actual (puede ser trailing)
+      if (candle.low <= pos.stop) { exit = pos.stop; reason = pos.trailingActive ? "Trailing Stop" : "Stop Loss"; }
+      else if (!cfg.useTrailing && candle.high >= pos.tp) { exit = pos.tp; reason = "Take Profit"; }
       if (exit) {
         const pnl = (exit - pos.entry) * pos.qty;
         balance += pnl;
@@ -540,6 +561,11 @@ function simulateStrategy(candles, riskPct, cfg = CONFIG) {
         peak = Math.max(peak, balance);
         maxDD = Math.max(maxDD, peak > 0 ? (peak - balance) / peak : 0);
         pos = null;
+      } else if (cfg.useTrailing) {
+        // 2) sin salida: subir el trailing stop según el máximo alcanzado (sin look-ahead)
+        pos.highest = Math.max(pos.highest, candle.high);
+        const newStop = pos.highest * (1 - cfg.trailPct);
+        if (newStop > pos.stop) { pos.stop = newStop; pos.trailingActive = true; }
       }
     }
     if (!pos && balance > 0) {
@@ -557,6 +583,8 @@ function simulateStrategy(candles, riskPct, cfg = CONFIG) {
           qty: positionUsd / price,
           stop: price * (1 - cfg.stopLossPct),
           tp: price * (1 + cfg.takeProfitPct),
+          highest: price,
+          trailingActive: false,
         };
       }
     }
@@ -699,6 +727,10 @@ function init() {
   $("riskSelect").addEventListener("change", renderAccount);
   $("backtestBtn").addEventListener("click", runBacktest);
   $("soundToggle").addEventListener("click", toggleSound);
+  $("trailingToggle").addEventListener("change", (e) => {
+    CONFIG.useTrailing = e.target.checked;
+    if (store.position) drawPositionLines();
+  });
 
   // Si había posición abierta, redibujamos sus líneas
   if (store.position) { state.symbol = store.position.symbol; $("symbolSelect").value = state.symbol; }
