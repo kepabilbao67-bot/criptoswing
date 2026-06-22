@@ -225,6 +225,36 @@ td.loss { color: var(--red); font-weight: 700; }
 .disclaimer b { color: var(--yellow); }
 .hidden { display: none; }
 
+/* ===== Tema claro ===== */
+body.light {
+  --bg: #eef1f7; --bg-soft: #e4e9f2; --card: #ffffff; --card-2: #f1f4fa;
+  --border: #d7deea; --text: #1a2233; --muted: #5b6678;
+  background: radial-gradient(1200px 600px at 70% -10%, #dde6f7 0%, var(--bg) 55%);
+}
+body.light .topbar { background: rgba(255, 255, 255, 0.85); }
+body.light .msg.user { color: #fff; }
+
+/* ===== Logros ===== */
+.achv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.achv { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; opacity: 0.45; filter: grayscale(0.8); transition: all 0.2s; }
+.achv.unlocked { opacity: 1; filter: none; border-color: var(--green); box-shadow: 0 0 12px rgba(22,199,132,0.15); }
+.achv .ico { font-size: 26px; display: block; margin-bottom: 6px; }
+.achv .nm { font-size: 12px; font-weight: 700; display: block; }
+.achv .ds { font-size: 11px; color: var(--muted); margin-top: 3px; display: block; }
+.achv-progress { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.achv-progress b { color: var(--green); }
+
+/* ===== Comparador ===== */
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.cmp-table th, .cmp-table td { padding: 8px 10px; text-align: right; border-top: 1px solid var(--border); }
+.cmp-table th:first-child, .cmp-table td:first-child { text-align: left; }
+.cmp-table thead th { color: var(--muted); text-transform: uppercase; font-size: 10px; }
+.cmp-best { color: var(--green); font-weight: 800; }
+
+/* ===== Toggles topbar ===== */
+.icon-btn { background: var(--card-2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 7px 12px; font-size: 13px; font-weight: 700; cursor: pointer; line-height: 1; }
+.icon-btn:hover { border-color: var(--muted); }
+
 /* ===== Responsive ===== */
 @media (max-width: 980px) {
   .layout, .calc-wrap { grid-template-columns: 1fr; }

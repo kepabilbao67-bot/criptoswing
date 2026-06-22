@@ -19,9 +19,11 @@ App web para **practicar trading de criptomonedas con dinero ficticio**, usando 
 - 🧮 **Calculadora de operaciones** con historial guardado (tamaño de posición, riesgo, R:R, ganancia/pérdida).
 - 🤖 **Asistente IA integrado** para resolver dudas (funciona sin conexión; opción de conectar tu propia clave de OpenAI).
 - 🎓 **Modo principiante**: tutorial paso a paso, glosario y explicación de long vs short.
-- 🔬 **Backtesting** con años de histórico real.
+- 🔬 **Backtesting** con años de histórico real + **comparador de estrategias** (lado a lado).
+- 🏆 **Logros/retos** para principiantes (gamificación que engancha y enseña).
+- 🌗 **Tema claro/oscuro** y 🌍 **bilingüe (Español/English)** con un clic.
 - 📈 **Curva de equity** + journal + estadísticas + export CSV.
-- 🔔 **Alertas sonoras** y 📱 **PWA instalable** (camino a la APK).
+- 🔔 **Alertas sonoras**, 📲 **notificaciones del navegador** y **PWA instalable** (camino a la APK).
 
 > 🧪 La estrategia (filtros MACD + volumen, ratio 1:2) está **validada con backtests** sobre 5-10 años. Toda la lógica pasa **221 tests automáticos, 0 fallos**, y la app arranca sin errores.
 

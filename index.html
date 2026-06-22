@@ -16,29 +16,30 @@
       <span class="logo">📈</span>
       <div>
         <h1>CryptoSwing</h1>
-        <span class="tagline">Simulador · dinero de práctica</span>
+        <span class="tagline" data-i18n="tagline">Simulador · dinero de práctica</span>
       </div>
     </div>
     <div class="topbar-right">
-      <button id="notifToggle" class="sound-btn off" title="Activar avisos del navegador">🔕📲</button>
-      <button id="soundToggle" class="sound-btn" title="Activar/desactivar sonido">🔔</button>
-      <div class="live-badge" id="liveBadge"><span class="dot"></span> EN VIVO</div>
+      <button id="langToggle" class="icon-btn" title="Idioma / Language">ES</button>
+      <button id="themeToggle" class="icon-btn" title="Tema claro/oscuro">🌙</button>
+      <button id="notifToggle" class="sound-btn off" title="Avisos del navegador">🔕📲</button>
+      <button id="soundToggle" class="sound-btn" title="Sonido">🔔</button>
+      <div class="live-badge" id="liveBadge"><span class="dot"></span> <span data-i18n="live">EN VIVO</span></div>
     </div>
   </header>
 
-  <!-- Navegación por pestañas -->
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="operar">📊 Operar</button>
-    <button class="tab" data-tab="calc">🧮 Calculadora</button>
-    <button class="tab" data-tab="asistente">🤖 Asistente IA</button>
-    <button class="tab" data-tab="aprender">🎓 Aprender</button>
+    <button class="tab active" data-tab="operar" data-i18n="tab.operar">📊 Operar</button>
+    <button class="tab" data-tab="calc" data-i18n="tab.calc">🧮 Calculadora</button>
+    <button class="tab" data-tab="asistente" data-i18n="tab.ai">🤖 Asistente IA</button>
+    <button class="tab" data-tab="aprender" data-i18n="tab.learn">🎓 Aprender</button>
   </nav>
 
-  <!-- ============ TAB: OPERAR ============ -->
+  <!-- ============ OPERAR ============ -->
   <section class="tabpanel active" id="tab-operar">
     <div class="market-controls">
       <label class="ctrl">
-        <span>Par</span>
+        <span data-i18n="pair">Par</span>
         <select id="symbolSelect">
           <option value="BTCUSDT">BTC / USDT</option>
           <option value="ETHUSDT">ETH / USDT</option>
@@ -50,23 +51,22 @@
         </select>
       </label>
       <label class="ctrl">
-        <span>Plazo / Temporalidad</span>
+        <span data-i18n="timeframe">Plazo / Temporalidad</span>
         <select id="intervalSelect">
-          <optgroup label="Corto plazo (intradía)">
-            <option value="15m">15 minutos</option>
-            <option value="1h">1 hora</option>
+          <optgroup label="Corto plazo" data-i18n-label="group.short">
+            <option value="15m">15m</option>
+            <option value="1h">1h</option>
           </optgroup>
-          <optgroup label="Largo plazo (swing)">
-            <option value="4h">4 horas</option>
-            <option value="1d" selected>1 día</option>
+          <optgroup label="Largo plazo" data-i18n-label="group.long">
+            <option value="4h">4h</option>
+            <option value="1d" selected>1d</option>
           </optgroup>
         </select>
       </label>
-      <div class="plazo-hint" id="plazoHint">Largo plazo: operaciones de días a semanas.</div>
+      <div class="plazo-hint" id="plazoHint"></div>
     </div>
 
     <div class="layout">
-      <!-- Columna gráficos -->
       <div class="chart-col">
         <div class="price-strip">
           <div class="price-main">
@@ -82,168 +82,166 @@
         <div class="rsi-label">RSI (14) <span id="rsiValue">--</span></div>
         <div id="rsiChart" class="rsi-box"></div>
 
-        <!-- Coach explicativo -->
         <div class="card coach-card">
-          <h2>🧭 Coach (te explica qué pasa)</h2>
-          <p id="coachText" class="coach-text">Conectando con el mercado…</p>
+          <h2 data-i18n="coach.title">🧭 Coach (te explica qué pasa)</h2>
+          <p id="coachText" class="coach-text" data-i18n="coach.connecting">Conectando con el mercado…</p>
         </div>
       </div>
 
-      <!-- Columna panel -->
       <aside class="panel-col">
-        <!-- Señal -->
         <div class="card signal-card">
-          <h2>Señal de la estrategia</h2>
-          <div id="signalBadge" class="signal-badge wait">ESPERANDO</div>
-          <div class="dir-label" id="dirLabel">Analizando ambos sentidos…</div>
+          <h2 data-i18n="signal.title">Señal de la estrategia</h2>
+          <div id="signalBadge" class="signal-badge wait">--</div>
+          <div class="dir-label" id="dirLabel"></div>
           <ul class="conditions" id="conditions">
-            <li data-cond="trend"><span class="mark">○</span> <span class="ctext">Tendencia</span></li>
-            <li data-cond="pullback"><span class="mark">○</span> <span class="ctext">Pullback (precio cerca de EMA50)</span></li>
-            <li data-cond="rsi"><span class="mark">○</span> <span class="ctext">RSI en zona</span></li>
-            <li data-cond="macd"><span class="mark">○</span> <span class="ctext">Momentum (MACD)</span></li>
-            <li data-cond="volume"><span class="mark">○</span> <span class="ctext">Volumen sobre la media</span></li>
+            <li data-cond="trend"><span class="mark">○</span> <span class="ctext"></span></li>
+            <li data-cond="pullback"><span class="mark">○</span> <span class="ctext"></span></li>
+            <li data-cond="rsi"><span class="mark">○</span> <span class="ctext"></span></li>
+            <li data-cond="macd"><span class="mark">○</span> <span class="ctext"></span></li>
+            <li data-cond="volume"><span class="mark">○</span> <span class="ctext"></span></li>
           </ul>
         </div>
 
-        <!-- Cuenta demo -->
         <div class="card account-card">
-          <h2>Cuenta de práctica</h2>
+          <h2 data-i18n="account.title">Cuenta de práctica</h2>
           <div class="balance-grid">
-            <div><span class="lbl">Saldo</span><span id="balance" class="big">$500.00</span></div>
-            <div><span class="lbl">Equity</span><span id="equity" class="big">$500.00</span></div>
+            <div><span class="lbl" data-i18n="account.balance">Saldo</span><span id="balance" class="big">$500.00</span></div>
+            <div><span class="lbl" data-i18n="account.equity">Equity</span><span id="equity" class="big">$500.00</span></div>
           </div>
           <div class="risk-row">
-            <label>Riesgo por operación
+            <label><span data-i18n="account.risk">Riesgo por operación</span>
               <select id="riskSelect">
-                <option value="0.01" selected>1% (conservador)</option>
-                <option value="0.02">2% (moderado)</option>
-                <option value="0.03">3% (agresivo)</option>
+                <option value="0.01" selected>1%</option>
+                <option value="0.02">2%</option>
+                <option value="0.03">3%</option>
               </select>
             </label>
           </div>
         </div>
 
-        <!-- Posición -->
         <div class="card position-card">
-          <h2>Posición abierta</h2>
-          <div id="noPosition" class="muted">Sin posición. Abre LONG (sube) o SHORT (baja).</div>
+          <h2 data-i18n="pos.title">Posición abierta</h2>
+          <div id="noPosition" class="muted" data-i18n="pos.none">Sin posición. Abre LONG (sube) o SHORT (baja).</div>
           <div id="positionInfo" class="hidden">
-            <div class="pos-row"><span>Sentido</span><b id="posDirection">--</b></div>
-            <div class="pos-row"><span>Entrada</span><b id="posEntry">--</b></div>
-            <div class="pos-row"><span>Cantidad</span><b id="posQty">--</b></div>
-            <div class="pos-row"><span>Stop Loss</span><b id="posStop" class="red">--</b></div>
-            <div class="pos-row"><span>Take Profit</span><b id="posTP" class="green">--</b></div>
-            <div class="pos-row pnl-row"><span>P&L flotante</span><b id="posPnl">--</b></div>
+            <div class="pos-row"><span data-i18n="pos.direction">Sentido</span><b id="posDirection">--</b></div>
+            <div class="pos-row"><span data-i18n="pos.entry">Entrada</span><b id="posEntry">--</b></div>
+            <div class="pos-row"><span data-i18n="pos.qty">Cantidad</span><b id="posQty">--</b></div>
+            <div class="pos-row"><span data-i18n="pos.stop">Stop Loss</span><b id="posStop" class="red">--</b></div>
+            <div class="pos-row"><span data-i18n="pos.tp">Take Profit</span><b id="posTP" class="green">--</b></div>
+            <div class="pos-row pnl-row"><span data-i18n="pos.pnl">P&L flotante</span><b id="posPnl">--</b></div>
           </div>
           <div class="btn-row">
-            <button id="buyBtn" class="btn buy">▲ LONG</button>
-            <button id="sellBtn" class="btn sell">▼ SHORT</button>
+            <button id="buyBtn" class="btn buy" data-i18n="btn.long">▲ LONG</button>
+            <button id="sellBtn" class="btn sell" data-i18n="btn.short">▼ SHORT</button>
           </div>
-          <button id="closeBtn" class="btn close" disabled>CERRAR POSICIÓN</button>
+          <button id="closeBtn" class="btn close" disabled data-i18n="btn.close">CERRAR POSICIÓN</button>
         </div>
 
-        <!-- Estadísticas -->
         <div class="card stats-card">
-          <h2>Estadísticas</h2>
+          <h2 data-i18n="stats.title">Estadísticas</h2>
           <div class="stats-grid">
-            <div><span class="lbl">Operaciones</span><b id="stTrades">0</b></div>
-            <div><span class="lbl">Win rate</span><b id="stWinrate">0%</b></div>
-            <div><span class="lbl">P&L neto</span><b id="stPnl">$0.00</b></div>
-            <div><span class="lbl">Drawdown máx</span><b id="stDrawdown">0%</b></div>
+            <div><span class="lbl" data-i18n="stats.trades">Operaciones</span><b id="stTrades">0</b></div>
+            <div><span class="lbl" data-i18n="stats.winrate">Win rate</span><b id="stWinrate">0%</b></div>
+            <div><span class="lbl" data-i18n="stats.pnl">P&L neto</span><b id="stPnl">$0.00</b></div>
+            <div><span class="lbl" data-i18n="stats.dd">Drawdown máx</span><b id="stDrawdown">0%</b></div>
           </div>
-          <button id="resetBtn" class="btn ghost">Reiniciar cuenta demo</button>
+          <button id="resetBtn" class="btn ghost" data-i18n="btn.reset">Reiniciar cuenta demo</button>
         </div>
 
-        <!-- Backtesting -->
         <div class="card backtest-card">
-          <h2>🔬 Backtesting</h2>
-          <p class="muted bt-intro">Prueba la estrategia con años de histórico real.</p>
-          <label class="bt-years">Histórico a analizar
+          <h2 data-i18n="bt.title">🔬 Backtesting</h2>
+          <p class="muted bt-intro" data-i18n="bt.intro">Prueba la estrategia con años de histórico real.</p>
+          <label class="bt-years"><span data-i18n="bt.years">Histórico a analizar</span>
             <select id="yearsSelect">
-              <option value="1">1 año</option>
-              <option value="2" selected>2 años</option>
-              <option value="3">3 años</option>
-              <option value="5">5 años</option>
+              <option value="1" data-i18n="bt.y1">1 año</option>
+              <option value="2" selected data-i18n="bt.y2">2 años</option>
+              <option value="3" data-i18n="bt.y3">3 años</option>
+              <option value="5" data-i18n="bt.y5">5 años</option>
             </select>
           </label>
-          <label class="bt-trailing"><input type="checkbox" id="trailingToggle" /> Usar trailing stop (experimental)</label>
-          <button id="backtestBtn" class="btn ghost">Ejecutar backtest</button>
+          <label class="bt-trailing"><input type="checkbox" id="trailingToggle" /> <span data-i18n="bt.trailing">Usar trailing stop (experimental)</span></label>
+          <button id="backtestBtn" class="btn ghost" data-i18n="bt.run">Ejecutar backtest</button>
+          <button id="compareBtn" class="btn ghost" data-i18n="bt.compare">⚖️ Comparar estrategias</button>
           <div id="backtestResults" class="hidden bt-results">
             <div class="bt-grid">
-              <div><span class="lbl">Operaciones</span><b id="btTrades">0</b></div>
-              <div><span class="lbl">Win rate</span><b id="btWinrate">0%</b></div>
-              <div><span class="lbl">Rentabilidad</span><b id="btReturn">0%</b></div>
-              <div><span class="lbl">Drawdown máx</span><b id="btDrawdown">0%</b></div>
-              <div><span class="lbl">Profit factor</span><b id="btPF">0</b></div>
-              <div><span class="lbl">Saldo final</span><b id="btFinal">$0</b></div>
+              <div><span class="lbl" data-i18n="stats.trades">Operaciones</span><b id="btTrades">0</b></div>
+              <div><span class="lbl" data-i18n="stats.winrate">Win rate</span><b id="btWinrate">0%</b></div>
+              <div><span class="lbl" data-i18n="bt.return">Rentabilidad</span><b id="btReturn">0%</b></div>
+              <div><span class="lbl" data-i18n="stats.dd">Drawdown máx</span><b id="btDrawdown">0%</b></div>
+              <div><span class="lbl" data-i18n="bt.pf">Profit factor</span><b id="btPF">0</b></div>
+              <div><span class="lbl" data-i18n="bt.final">Saldo final</span><b id="btFinal">$0</b></div>
             </div>
             <p class="muted bt-period" id="btPeriod"></p>
           </div>
+          <div id="compareResults" class="hidden"></div>
         </div>
       </aside>
     </div>
 
-    <!-- Seguimiento: curva de equity -->
     <section class="equity-section">
-      <div class="journal-head">
-        <h2>📈 Evolución de tu cuenta (equity)</h2>
-        <span class="muted" id="equityNote">Cada operación cerrada actualiza esta curva.</span>
-      </div>
+      <div class="journal-head"><h2 data-i18n="equity.title">📈 Evolución de tu cuenta (equity)</h2></div>
       <div id="equityChart" class="equity-box"></div>
     </section>
 
-    <!-- Journal -->
+    <!-- Logros -->
+    <section class="journal-section">
+      <div class="journal-head"><h2 data-i18n="achv.title">🏆 Logros</h2></div>
+      <div class="card">
+        <p class="achv-progress" id="achvProgress"></p>
+        <div class="achv-grid" id="achvGrid"></div>
+      </div>
+    </section>
+
     <section class="journal-section">
       <div class="journal-head">
-        <h2>📒 Historial de operaciones</h2>
-        <button id="exportBtn" class="btn ghost small">Exportar CSV</button>
+        <h2 data-i18n="journal.title">📒 Historial de operaciones</h2>
+        <button id="exportBtn" class="btn ghost small" data-i18n="journal.export">Exportar CSV</button>
       </div>
       <div class="table-wrap">
         <table id="journalTable">
           <thead>
             <tr>
-              <th>Fecha</th><th>Par</th><th>Sentido</th><th>Entrada</th><th>Salida</th>
-              <th>Resultado</th><th>%</th><th>Motivo cierre</th>
+              <th data-i18n="th.date">Fecha</th><th data-i18n="pair">Par</th><th data-i18n="pos.direction">Sentido</th>
+              <th data-i18n="pos.entry">Entrada</th><th data-i18n="th.exit">Salida</th>
+              <th data-i18n="th.result">Resultado</th><th>%</th><th data-i18n="th.reason">Motivo</th>
             </tr>
           </thead>
-          <tbody id="journalBody">
-            <tr class="empty"><td colspan="8">Aún no hay operaciones registradas.</td></tr>
-          </tbody>
+          <tbody id="journalBody"><tr class="empty"><td colspan="8" data-i18n="journal.empty">Aún no hay operaciones registradas.</td></tr></tbody>
         </table>
       </div>
     </section>
   </section>
 
-  <!-- ============ TAB: CALCULADORA ============ -->
+  <!-- ============ CALCULADORA ============ -->
   <section class="tabpanel" id="tab-calc">
     <div class="calc-wrap">
       <div class="card calc-form-card">
-        <h2>🧮 Calculadora de operaciones</h2>
-        <p class="muted">Calcula cuánto invertir y arriesgar. Los resultados se pueden guardar.</p>
+        <h2 data-i18n="calc.title">🧮 Calculadora de operaciones</h2>
+        <p class="muted" data-i18n="calc.intro">Calcula cuánto invertir y arriesgar. Los resultados se pueden guardar.</p>
         <div class="calc-grid">
-          <label>Capital total (USD)<input type="number" id="calcCapital" value="500" min="0" step="any" /></label>
-          <label>Riesgo por operación (%)<input type="number" id="calcRisk" value="1" min="0" step="any" /></label>
-          <label>Sentido
-            <select id="calcDir"><option value="long">Long (compra)</option><option value="short">Short (venta)</option></select>
+          <label><span data-i18n="calc.capital">Capital total (USD)</span><input type="number" id="calcCapital" value="500" min="0" step="any" /></label>
+          <label><span data-i18n="calc.risk">Riesgo por operación (%)</span><input type="number" id="calcRisk" value="1" min="0" step="any" /></label>
+          <label><span data-i18n="calc.dir">Sentido</span>
+            <select id="calcDir"><option value="long" data-i18n="calc.long">Long (compra)</option><option value="short" data-i18n="calc.short">Short (venta)</option></select>
           </label>
-          <label>Precio de entrada<input type="number" id="calcEntry" value="0" min="0" step="any" /></label>
-          <label>Precio de stop loss<input type="number" id="calcStop" value="0" min="0" step="any" /></label>
-          <label>Precio objetivo (take profit)<input type="number" id="calcTarget" value="0" min="0" step="any" /></label>
+          <label><span data-i18n="calc.entry">Precio de entrada</span><input type="number" id="calcEntry" value="0" min="0" step="any" /></label>
+          <label><span data-i18n="calc.stop">Precio de stop loss</span><input type="number" id="calcStop" value="0" min="0" step="any" /></label>
+          <label><span data-i18n="calc.target">Precio objetivo (take profit)</span><input type="number" id="calcTarget" value="0" min="0" step="any" /></label>
         </div>
         <div class="btn-row">
-          <button id="calcBtn" class="btn buy">Calcular</button>
-          <button id="calcSaveBtn" class="btn ghost" disabled>Guardar cálculo</button>
+          <button id="calcBtn" class="btn buy" data-i18n="calc.calc">Calcular</button>
+          <button id="calcSaveBtn" class="btn ghost" disabled data-i18n="calc.save">Guardar cálculo</button>
         </div>
         <div id="calcResults" class="hidden calc-results">
           <div class="calc-res-grid">
-            <div><span class="lbl">Riesgo en USD</span><b id="calcRiskUsd">--</b></div>
-            <div><span class="lbl">Invertir (posición)</span><b id="calcPosUsd">--</b></div>
-            <div><span class="lbl">Unidades a comprar</span><b id="calcUnits">--</b></div>
-            <div><span class="lbl">Ratio riesgo/beneficio</span><b id="calcRR">--</b></div>
-            <div><span class="lbl">Ganancia potencial</span><b id="calcProfit" class="green">--</b></div>
-            <div><span class="lbl">Pérdida potencial</span><b id="calcLoss" class="red">--</b></div>
-            <div><span class="lbl">Distancia al stop</span><b id="calcToStop">--</b></div>
-            <div><span class="lbl">Distancia al objetivo</span><b id="calcToTarget">--</b></div>
+            <div><span class="lbl" data-i18n="calc.riskUsd">Riesgo en USD</span><b id="calcRiskUsd">--</b></div>
+            <div><span class="lbl" data-i18n="calc.posUsd">Invertir (posición)</span><b id="calcPosUsd">--</b></div>
+            <div><span class="lbl" data-i18n="calc.units">Unidades</span><b id="calcUnits">--</b></div>
+            <div><span class="lbl" data-i18n="calc.rr">Ratio riesgo/beneficio</span><b id="calcRR">--</b></div>
+            <div><span class="lbl" data-i18n="calc.profit">Ganancia potencial</span><b id="calcProfit" class="green">--</b></div>
+            <div><span class="lbl" data-i18n="calc.loss">Pérdida potencial</span><b id="calcLoss" class="red">--</b></div>
+            <div><span class="lbl" data-i18n="calc.toStop">Distancia al stop</span><b id="calcToStop">--</b></div>
+            <div><span class="lbl" data-i18n="calc.toTarget">Distancia al objetivo</span><b id="calcToTarget">--</b></div>
           </div>
           <p class="muted" id="calcVerdict"></p>
         </div>
@@ -251,80 +249,71 @@
 
       <div class="card calc-saved-card">
         <div class="journal-head">
-          <h2>💾 Cálculos guardados</h2>
-          <button id="clearCalcsBtn" class="btn ghost small">Borrar todos</button>
+          <h2 data-i18n="calc.saved">💾 Cálculos guardados</h2>
+          <button id="clearCalcsBtn" class="btn ghost small" data-i18n="calc.clear">Borrar todos</button>
         </div>
-        <div id="calcList" class="calc-list"><p class="muted">Aún no has guardado cálculos.</p></div>
+        <div id="calcList" class="calc-list"></div>
       </div>
     </div>
   </section>
 
-  <!-- ============ TAB: ASISTENTE IA ============ -->
+  <!-- ============ ASISTENTE ============ -->
   <section class="tabpanel" id="tab-asistente">
     <div class="card chat-card">
-      <h2>🤖 Asistente de trading</h2>
-      <p class="muted">Pregúntame lo que quieras sobre trading: long, short, stop loss, RSI, gestión de riesgo, psicología... Funciona sin conexión externa. Opcionalmente puedes conectar tu propia IA.</p>
+      <h2 data-i18n="ai.title">🤖 Asistente de trading</h2>
+      <p class="muted" data-i18n="ai.intro">Pregúntame lo que quieras sobre trading. Funciona sin conexión externa. Opcionalmente conecta tu propia IA.</p>
       <div class="chat-chips" id="chatChips">
-        <button class="chip" data-q="¿Qué es ir en largo (long)?">¿Qué es long?</button>
-        <button class="chip" data-q="¿Qué es ir en corto (short)?">¿Qué es short?</button>
-        <button class="chip" data-q="¿Qué es un stop loss?">¿Stop loss?</button>
-        <button class="chip" data-q="¿Cómo calculo el tamaño de mi posición?">Tamaño de posición</button>
-        <button class="chip" data-q="¿Qué es la gestión de riesgo?">Gestión de riesgo</button>
-        <button class="chip" data-q="¿Cómo empiezo en el trading?">¿Cómo empiezo?</button>
+        <button class="chip" data-q="¿Qué es ir en largo (long)?" data-i18n="ai.chip.long">¿Qué es long?</button>
+        <button class="chip" data-q="¿Qué es ir en corto (short)?" data-i18n="ai.chip.short">¿Qué es short?</button>
+        <button class="chip" data-q="¿Qué es un stop loss?" data-i18n="ai.chip.stop">¿Stop loss?</button>
+        <button class="chip" data-q="¿Cómo calculo el tamaño de mi posición?" data-i18n="ai.chip.size">Tamaño de posición</button>
+        <button class="chip" data-q="¿Qué es la gestión de riesgo?" data-i18n="ai.chip.risk">Gestión de riesgo</button>
+        <button class="chip" data-q="¿Cómo empiezo en el trading?" data-i18n="ai.chip.start">¿Cómo empiezo?</button>
       </div>
       <div id="chatLog" class="chat-log"></div>
       <div class="chat-input-row">
-        <input type="text" id="chatInput" placeholder="Escribe tu pregunta y pulsa Enviar…" autocomplete="off" />
-        <button id="chatSend" class="btn buy">Enviar</button>
+        <input type="text" id="chatInput" placeholder="Escribe tu pregunta…" data-i18n-ph="ai.placeholder" autocomplete="off" />
+        <button id="chatSend" class="btn buy" data-i18n="ai.send">Enviar</button>
       </div>
       <details class="api-details">
-        <summary>⚙️ Conectar tu propia IA (opcional, avanzado)</summary>
-        <p class="muted">Si pegas una clave de OpenAI, las respuestas las generará GPT. Si lo dejas vacío, usa el asistente local gratuito. La clave se guarda solo en tu navegador.</p>
+        <summary data-i18n="ai.connect">⚙️ Conectar tu propia IA (opcional)</summary>
+        <p class="muted" data-i18n="ai.connectHelp">Si pegas una clave de OpenAI, responderá GPT. Vacío = asistente local gratuito. La clave se guarda solo en tu navegador.</p>
         <input type="password" id="apiKeyInput" placeholder="sk-... (opcional)" autocomplete="off" />
       </details>
     </div>
   </section>
 
-  <!-- ============ TAB: APRENDER ============ -->
+  <!-- ============ APRENDER ============ -->
   <section class="tabpanel" id="tab-aprender">
     <div class="learn-wrap">
       <div class="card">
-        <h2>🎓 Empieza aquí (para principiantes)</h2>
-        <ol class="steps">
-          <li><b>¿Qué es esto?</b> Un simulador para practicar trading de criptomonedas con dinero ficticio y datos reales. Cero riesgo.</li>
-          <li><b>Elige un par y un plazo.</b> BTC/ETH son los más seguros para empezar. Plazo "1 día" = largo plazo (swing); "15m/1h" = corto plazo (intradía).</li>
-          <li><b>Mira el Coach.</b> Te explica en cada momento si conviene comprar (long), vender (short) o esperar.</li>
-          <li><b>Abre una operación.</b> LONG si crees que sube, SHORT si crees que baja. La app calcula tu stop, objetivo y cuánto arriesgar.</li>
-          <li><b>Revisa tus estadísticas y journal.</b> Aprende de cada operación. Practica 1 mes antes de pensar en dinero real.</li>
-        </ol>
+        <h2 data-i18n="learn.startTitle">🎓 Empieza aquí (para principiantes)</h2>
+        <ol class="steps" id="learnSteps"></ol>
       </div>
-
       <div class="card">
-        <h2>📖 Glosario (todo explicado fácil)</h2>
+        <h2 data-i18n="learn.glossaryTitle">📖 Glosario</h2>
         <div class="glossary" id="glossary"></div>
       </div>
-
       <div class="card">
-        <h2>⚖️ Long vs Short — los dos sentidos</h2>
+        <h2 data-i18n="learn.lsTitle">⚖️ Long vs Short</h2>
         <div class="ls-grid">
           <div class="ls-box ls-long">
-            <h3>▲ LONG (comprar)</h3>
-            <p>Ganas si el precio <b>sube</b>. Compras barato para vender caro. Es lo más intuitivo.</p>
-            <p class="muted">Ejemplo: compras BTC a 60.000 y lo cierras a 66.000 → ganancia.</p>
+            <h3 data-i18n="learn.longH">▲ LONG (comprar)</h3>
+            <p data-i18n="learn.longP">Ganas si el precio sube. Compras barato para vender caro.</p>
+            <p class="muted" data-i18n="learn.longEx">Ej.: compras BTC a 60.000 y cierras a 66.000 → ganancia.</p>
           </div>
           <div class="ls-box ls-short">
-            <h3>▼ SHORT (vender)</h3>
-            <p>Ganas si el precio <b>baja</b>. Vendes caro para recomprar barato. Permite ganar en mercados bajistas.</p>
-            <p class="muted">Ejemplo: abres short a 60.000 y lo cierras a 54.000 → ganancia.</p>
+            <h3 data-i18n="learn.shortH">▼ SHORT (vender)</h3>
+            <p data-i18n="learn.shortP">Ganas si el precio baja. Vendes caro para recomprar barato.</p>
+            <p class="muted" data-i18n="learn.shortEx">Ej.: abres short a 60.000 y cierras a 54.000 → ganancia.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="disclaimer">
-    ⚠️ Herramienta <b>educativa</b> con dinero ficticio. No es asesoramiento financiero.
-    Datos de mercado reales (Binance); operaciones simuladas. El trading de criptomonedas es de alto riesgo.
+  <footer class="disclaimer" data-i18n="disclaimer">
+    ⚠️ Herramienta educativa con dinero ficticio. No es asesoramiento financiero. Datos reales (Binance); operaciones simuladas. El trading de criptomonedas es de alto riesgo.
   </footer>
 
   <script src="app.js"></script>
