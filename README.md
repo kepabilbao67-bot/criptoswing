@@ -8,23 +8,22 @@ App web para **practicar trading de criptomonedas con dinero ficticio**, usando 
 
 ## ✨ Características
 
-- 📊 **Gráfico de velas en tiempo real** con TradingView Lightweight Charts.
-- 🎨 **Indicadores a color:** EMA 50 (azul), EMA 200 (naranja) y panel **RSI (14)** con zonas 30/70.
-- 🟢 **Detector de señales** con **5 condiciones** de confirmación (se marcan en verde al cumplirse):
-  1. Tendencia alcista (EMA 50 &gt; EMA 200)
-  2. Pullback (precio cerca de la EMA 50)
-  3. RSI entre 40 y 55
-  4. **Momentum alcista (MACD &gt; 0)** — filtro que evita entrar en mercados bajistas
-  5. **Volumen por encima de su media (20)** — confirma participación real
-- 💵 **Cuenta de práctica con 500 USD** ficticios (configurable, se guarda en tu navegador).
-- 🛡️ **Gestión de riesgo automática:** calcula tamaño de posición, stop loss (-5%) y take profit (+10%), ratio 1:2 optimizado por backtest.
-- 🔬 **Backtesting** con años de histórico real (1 a 5 años).
-- 🔔 **Alertas sonoras** al aparecer una señal.
-- 📒 **Journal automático** de cada operación + **exportar a CSV**.
-- 📈 **Estadísticas:** nº de operaciones, win rate, P&L neto y drawdown máximo.
-- 📱 **Responsive** — funciona en móvil y se puede empaquetar como **APK**.
+- 🗂️ **4 pestañas**: Operar · Calculadora · Asistente IA · Aprender.
+- 📊 **Gráfico de velas en tiempo real** con EMA 50/200, RSI(14), MACD y volumen.
+- ↕️ **Operativa LONG y SHORT** (gana tanto si el mercado sube como si baja).
+- ⏱️ **Corto y largo plazo**: temporalidades de 15m/1h (intradía) a 4h/1d (swing).
+- 🧭 **Coach inteligente**: te explica en lenguaje sencillo si conviene comprar, vender o esperar, y qué condición falta.
+- 🟢 **Detector de señales** con 5 condiciones de confirmación para cada sentido.
+- 💵 **Cuenta de práctica con 500 USD** ficticios.
+- 🛡️ **Gestión de riesgo automática** (stop 5% / TP 10%, ratio 1:2 optimizado).
+- 🧮 **Calculadora de operaciones** con historial guardado (tamaño de posición, riesgo, R:R, ganancia/pérdida).
+- 🤖 **Asistente IA integrado** para resolver dudas (funciona sin conexión; opción de conectar tu propia clave de OpenAI).
+- 🎓 **Modo principiante**: tutorial paso a paso, glosario y explicación de long vs short.
+- 🔬 **Backtesting** con años de histórico real.
+- 📈 **Curva de equity** + journal + estadísticas + export CSV.
+- 🔔 **Alertas sonoras** y 📱 **PWA instalable** (camino a la APK).
 
-> 🧪 **Los filtros MACD + volumen están validados con backtests:** en pruebas sobre 5-10 años de datos redujeron el drawdown y mejoraron la rentabilidad frente a la versión sin filtros (especialmente en mercados laterales y bajistas).
+> 🧪 La estrategia (filtros MACD + volumen, ratio 1:2) está **validada con backtests** sobre 5-10 años. Toda la lógica pasa **221 tests automáticos, 0 fallos**, y la app arranca sin errores.
 
 ---
 
