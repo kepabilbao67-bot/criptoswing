@@ -258,11 +258,11 @@ function evaluateSignal() {
   } else if (longS.buy) {
     badge.textContent = "🟢 SEÑAL LONG"; badge.className = "signal-badge buy";
     dirLabel.textContent = "El mercado sube: oportunidad de compra.";
-    if (!lastBuyState) beep(); lastBuyState = true;
+    if (!lastBuyState) { beep(); notifySignal("long"); } lastBuyState = true;
   } else if (shortS.buy) {
     badge.textContent = "🔴 SEÑAL SHORT"; badge.className = "signal-badge sell";
     dirLabel.textContent = "El mercado baja: oportunidad de venta en corto.";
-    if (!lastBuyState) beep(); lastBuyState = true;
+    if (!lastBuyState) { beep(); notifySignal("short"); } lastBuyState = true;
   } else {
     badge.textContent = "⏳ ESPERAR"; badge.className = "signal-badge wait";
     dirLabel.textContent = "Aún no se cumplen todas las condiciones.";
@@ -679,6 +679,40 @@ function beep() {
 }
 function toggleSound() { soundOn = !soundOn; const b = $("soundToggle"); b.textContent = soundOn ? "🔔" : "🔕"; b.classList.toggle("off", !soundOn); }
 
+/* ------------------------- Notificaciones del navegador ------------------------- */
+let notifOn = false;
+function notifAvailable() { return typeof window !== "undefined" && "Notification" in window; }
+
+function toggleNotif() {
+  const b = $("notifToggle");
+  if (!notifAvailable()) { b.title = "Tu navegador no soporta notificaciones"; return; }
+  if (!notifOn) {
+    Notification.requestPermission().then((perm) => {
+      notifOn = perm === "granted";
+      b.textContent = notifOn ? "🔔📲" : "🔕📲";
+      b.classList.toggle("off", !notifOn);
+      try { localStorage.setItem("cryptoswing_notif", notifOn ? "1" : "0"); } catch (e) {}
+      if (notifOn) notify("CryptoSwing", "Avisos activados. Te avisaremos cuando haya una señal.");
+    });
+  } else {
+    notifOn = false;
+    b.textContent = "🔕📲"; b.classList.add("off");
+    try { localStorage.setItem("cryptoswing_notif", "0"); } catch (e) {}
+  }
+}
+
+function notify(title, body) {
+  if (!notifOn || !notifAvailable() || Notification.permission !== "granted") return;
+  try { new Notification(title, { body, icon: "icon.svg", tag: "cryptoswing-signal", renotify: true }); } catch (e) {}
+}
+
+function notifySignal(dir) {
+  const price = state.lastPrice != null ? "$" + fmt(state.lastPrice, priceDecimals(state.lastPrice)) : "";
+  const sym = state.symbol.replace("USDT", "");
+  if (dir === "long") notify("🟢 Señal LONG en " + sym, `El mercado sube (${price}). Oportunidad de compra según la estrategia.`);
+  else notify("🔴 Señal SHORT en " + sym, `El mercado baja (${price}). Oportunidad de venta en corto según la estrategia.`);
+}
+
 /* ------------------------- Reset ------------------------- */
 function resetAccount() {
   if (!confirm("¿Reiniciar la cuenta demo? Se borrará el historial y el saldo volverá a 500 USD.")) return;
@@ -718,6 +752,10 @@ function init() {
   addMsg("¡Hola! 👋 Soy tu asistente. Pregúntame cualquier duda de trading o pulsa una sugerencia de arriba.", "bot");
   // cargar API key guardada
   const savedKey = localStorage.getItem("cryptoswing_apikey"); if (savedKey) $("apiKeyInput").value = savedKey;
+  // restaurar estado de notificaciones
+  if (notifAvailable() && localStorage.getItem("cryptoswing_notif") === "1" && Notification.permission === "granted") {
+    notifOn = true; const b = $("notifToggle"); b.textContent = "🔔📲"; b.classList.remove("off");
+  }
 
   $("symbolSelect").addEventListener("change", changeMarket);
   $("intervalSelect").addEventListener("change", changeMarket);
@@ -729,6 +767,7 @@ function init() {
   $("riskSelect").addEventListener("change", renderAccount);
   $("backtestBtn").addEventListener("click", runBacktest);
   $("soundToggle").addEventListener("click", toggleSound);
+  $("notifToggle").addEventListener("click", toggleNotif);
   $("trailingToggle").addEventListener("change", (e) => { CONFIG.useTrailing = e.target.checked; if (store.position) drawPositionLines(); });
 
   // calculadora
