@@ -137,7 +137,15 @@
       <!-- Backtesting -->
       <div class="card backtest-card">
         <h2>🔬 Backtesting</h2>
-        <p class="muted bt-intro">Prueba la estrategia con el historial cargado del par y temporalidad actuales.</p>
+        <p class="muted bt-intro">Prueba la estrategia con años de histórico real del par y temporalidad actuales.</p>
+        <label class="bt-years">Histórico a analizar
+          <select id="yearsSelect">
+            <option value="1">1 año</option>
+            <option value="2" selected>2 años</option>
+            <option value="3">3 años</option>
+            <option value="5">5 años</option>
+          </select>
+        </label>
         <button id="backtestBtn" class="btn ghost">Ejecutar backtest</button>
         <div id="backtestResults" class="hidden bt-results">
           <div class="bt-grid">

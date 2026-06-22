@@ -140,8 +140,10 @@ function buildCharts() {
 }
 
 /* ------------------------- Datos de mercado ------------------------- */
-async function fetchCandles() {
-  const path = `/api/v3/klines?symbol=${state.symbol}&interval=${state.interval}&limit=${CONFIG.candleLimit}`;
+// Descarga genérica de velas (con base de API y parámetros opcionales)
+async function fetchKlines(symbol, interval, limit, endTime) {
+  let path = `/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  if (endTime) path += `&endTime=${endTime}`;
   let lastErr;
   for (const base of API_BASES) {
     try {
@@ -156,6 +158,35 @@ async function fetchCandles() {
     } catch (e) { lastErr = e; }
   }
   throw lastErr;
+}
+
+async function fetchCandles() {
+  return fetchKlines(state.symbol, state.interval, CONFIG.candleLimit);
+}
+
+// Descarga paginada hacia atrás para conseguir N velas (años de histórico)
+async function fetchHistory(targetCount) {
+  const maxPerReq = 1000; // límite de Binance por petición
+  let all = [];
+  let endTime = undefined;
+  let guard = 0;
+  while (all.length < targetCount && guard < 60) {
+    guard++;
+    const need = Math.min(maxPerReq, targetCount - all.length);
+    const batch = await fetchKlines(state.symbol, state.interval, need, endTime);
+    if (!batch.length) break;
+    all = batch.concat(all);
+    // siguiente página: justo antes de la vela más antigua obtenida
+    endTime = batch[0].time * 1000 - 1;
+    if (batch.length < need) break; // no hay más histórico disponible
+  }
+  // eliminar posibles duplicados por solapamiento y ordenar
+  const seen = new Set();
+  const unique = [];
+  for (const c of all.sort((a, b) => a.time - b.time)) {
+    if (!seen.has(c.time)) { seen.add(c.time); unique.push(c); }
+  }
+  return unique;
 }
 
 function setLive(on) {
@@ -434,25 +465,24 @@ function exportCSV() {
 }
 
 /* ------------------------- Backtesting ------------------------- */
-function runBacktest() {
-  const c = state.candles;
-  if (!c || c.length < CONFIG.emaSlow + 5) return;
+// Motor puro: simula la estrategia sobre un array de velas. Sin efectos secundarios.
+function simulateStrategy(candles, riskPct, cfg = CONFIG) {
+  const c = candles;
   const closes = c.map((x) => x.close);
-  const e50 = ema(closes, CONFIG.emaFast);
-  const e200 = ema(closes, CONFIG.emaSlow);
-  const rsiArr = rsi(closes, CONFIG.rsiPeriod);
+  const e50 = ema(closes, cfg.emaFast);
+  const e200 = ema(closes, cfg.emaSlow);
+  const rsiArr = rsi(closes, cfg.rsiPeriod);
 
-  const riskPct = parseFloat($("riskSelect").value);
-  let balance = CONFIG.initialBalance;
+  let balance = cfg.initialBalance;
   let peak = balance, maxDD = 0;
   let pos = null;
   const trades = [];
 
-  for (let i = CONFIG.emaSlow; i < c.length; i++) {
+  for (let i = cfg.emaSlow; i < c.length; i++) {
     const candle = c[i];
-    // Gestionar posición abierta con high/low de la vela
     if (pos) {
       let exit = null, reason = null;
+      // si una misma vela toca stop y tp, asumimos lo peor (stop) por prudencia
       if (candle.low <= pos.stop) { exit = pos.stop; reason = "Stop Loss"; }
       else if (candle.high >= pos.tp) { exit = pos.tp; reason = "Take Profit"; }
       if (exit) {
@@ -460,53 +490,95 @@ function runBacktest() {
         balance += pnl;
         trades.push({ pnl, reason });
         peak = Math.max(peak, balance);
-        maxDD = Math.max(maxDD, (peak - balance) / peak);
+        maxDD = Math.max(maxDD, peak > 0 ? (peak - balance) / peak : 0);
         pos = null;
       }
     }
-    // Buscar nueva entrada
-    if (!pos) {
+    if (!pos && balance > 0) {
       const price = candle.close;
       const trend = e50[i] > e200[i];
-      const pullback = Math.abs(price - e50[i]) / e50[i] <= CONFIG.pullbackPct;
+      const pullback = e50[i] > 0 && Math.abs(price - e50[i]) / e50[i] <= cfg.pullbackPct;
       const r = rsiArr[i];
-      const rsiOk = r != null && r >= CONFIG.rsiMin && r <= CONFIG.rsiMax;
-      if (trend && pullback && rsiOk) {
-        const positionUsd = Math.min((balance * riskPct) / CONFIG.stopLossPct, balance);
+      const rsiOk = r != null && !isNaN(r) && r >= cfg.rsiMin && r <= cfg.rsiMax;
+      if (trend && pullback && rsiOk && price > 0) {
+        const positionUsd = Math.min((balance * riskPct) / cfg.stopLossPct, balance);
         pos = {
           entry: price,
           qty: positionUsd / price,
-          stop: price * (1 - CONFIG.stopLossPct),
-          tp: price * (1 + CONFIG.takeProfitPct),
+          stop: price * (1 - cfg.stopLossPct),
+          tp: price * (1 + cfg.takeProfitPct),
         };
       }
     }
   }
 
   const wins = trades.filter((t) => t.pnl > 0);
-  const losses = trades.filter((t) => t.pnl <= 0);
   const grossWin = wins.reduce((a, t) => a + t.pnl, 0);
-  const grossLoss = Math.abs(losses.reduce((a, t) => a + t.pnl, 0));
-  const winrate = trades.length ? (wins.length / trades.length) * 100 : 0;
-  const ret = ((balance - CONFIG.initialBalance) / CONFIG.initialBalance) * 100;
-  const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0);
-
-  $("btTrades").textContent = trades.length;
-  $("btWinrate").textContent = fmt(winrate, 0) + "%";
-  const retEl = $("btReturn");
-  retEl.textContent = (ret >= 0 ? "+" : "") + fmt(ret, 1) + "%";
-  retEl.className = ret >= 0 ? "green" : "red";
-  $("btDrawdown").textContent = fmt(maxDD * 100, 1) + "%";
-  $("btPF").textContent = pf === Infinity ? "∞" : fmt(pf, 2);
-  const finalEl = $("btFinal");
-  finalEl.textContent = fmtMoney(balance);
-  finalEl.className = balance >= CONFIG.initialBalance ? "green" : "red";
-
-  const first = new Date(c[CONFIG.emaSlow].time * 1000).toLocaleDateString("es-ES");
-  const last = new Date(c[c.length - 1].time * 1000).toLocaleDateString("es-ES");
-  $("btPeriod").textContent = `Periodo: ${first} → ${last} · ${state.symbol} · ${state.interval} · riesgo ${(riskPct * 100).toFixed(0)}%`;
-  $("backtestResults").classList.remove("hidden");
+  const grossLoss = Math.abs(trades.filter((t) => t.pnl <= 0).reduce((a, t) => a + t.pnl, 0));
+  return {
+    trades: trades.length,
+    wins: wins.length,
+    winrate: trades.length ? (wins.length / trades.length) * 100 : 0,
+    ret: ((balance - cfg.initialBalance) / cfg.initialBalance) * 100,
+    maxDD: maxDD * 100,
+    pf: grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0),
+    balance,
+  };
 }
+
+// Cuántas velas hay por año según la temporalidad
+function candlesPerYear(interval) {
+  const map = { "15m": 96 * 365, "1h": 24 * 365, "4h": 6 * 365, "1d": 365 };
+  return map[interval] || 365;
+}
+
+async function runBacktest() {
+  const btn = $("backtestBtn");
+  const years = parseInt($("yearsSelect").value, 10);
+  const riskPct = parseFloat($("riskSelect").value);
+
+  btn.disabled = true;
+  const oldText = btn.textContent;
+  btn.textContent = "Descargando histórico…";
+
+  try {
+    // objetivo de velas (limitado para mantener buen rendimiento)
+    const target = Math.min(years * candlesPerYear(state.interval), 6000);
+    const candles = await fetchHistory(target);
+
+    if (!candles || candles.length < CONFIG.emaSlow + 5) {
+      btn.textContent = "Histórico insuficiente";
+      setTimeout(() => { btn.textContent = oldText; btn.disabled = false; }, 1800);
+      return;
+    }
+
+    const r = simulateStrategy(candles, riskPct);
+
+    $("btTrades").textContent = r.trades;
+    $("btWinrate").textContent = fmt(r.winrate, 0) + "%";
+    const retEl = $("btReturn");
+    retEl.textContent = (r.ret >= 0 ? "+" : "") + fmt(r.ret, 1) + "%";
+    retEl.className = r.ret >= 0 ? "green" : "red";
+    $("btDrawdown").textContent = fmt(r.maxDD, 1) + "%";
+    $("btPF").textContent = r.pf === Infinity ? "∞" : fmt(r.pf, 2);
+    const finalEl = $("btFinal");
+    finalEl.textContent = fmtMoney(r.balance);
+    finalEl.className = r.balance >= CONFIG.initialBalance ? "green" : "red";
+
+    const first = new Date(candles[0].time * 1000).toLocaleDateString("es-ES");
+    const last = new Date(candles[candles.length - 1].time * 1000).toLocaleDateString("es-ES");
+    $("btPeriod").textContent = `${candles.length} velas · ${first} → ${last} · ${state.symbol} · ${state.interval} · riesgo ${(riskPct * 100).toFixed(0)}%`;
+    $("backtestResults").classList.remove("hidden");
+  } catch (e) {
+    console.error("Error en backtest:", e);
+    btn.textContent = "Error de conexión";
+    setTimeout(() => { btn.textContent = oldText; }, 1800);
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
+  }
+}
+
 
 /* ------------------------- Alertas sonoras ------------------------- */
 let soundOn = true;
