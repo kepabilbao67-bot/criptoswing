@@ -6,3 +6,8 @@ _site/
 *.log
 .cache/
 package-lock.json
+
+vercel-public/
+.vercel/
+.env
+.env.*
